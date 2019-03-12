@@ -1,3 +1,20 @@
 #modal-box {
     max-width: 75% !important
 }
+
+body {
+    background-color: #A1E6D9;
+}
+
+#button-addon2 {
+    background-color: white;
+    border: .5px solid #CCCCCC;
+}
+
+.navbar-brand {
+    font-size: 2rem;
+}
+
+#favorites-button {
+    font-size: 1.5rem;
+}
