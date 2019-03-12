@@ -82,7 +82,6 @@ let getGifs = function () {
         url: `https://api.giphy.com/v1/gifs/search?q=${search}&rating=g&offset=${rand}&api_key=V5ocWl5KK3sMT5VrH2fFjEVoaCuVfUru&limit=10`,
         success: (result) => {
             let data = result.data;
-            console.log(data)
             data.forEach(element => {
                 let active = element.images.fixed_width.url;
                 let inactive = element.images.fixed_width_still.url;
