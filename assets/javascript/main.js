@@ -9,7 +9,9 @@ class Gif {
     }
 
     buildCard = (parentId) => {
-        let card = $('<div>').addClass('card m-2');
+        let card = $('<div>')
+            .addClass('card m-2 w-5')
+            .attr('style', 'width: 45%; float: left')
         let img = $('<img>')
             .attr('src', this.inactiveLink)
             .addClass('card-img-top')
@@ -29,7 +31,8 @@ class Gif {
             .addClass('btn btn-primary')
             .text('Download')
             .attr('download', true)
-            .attr('href', this.download);
+            .attr('href', this.download)
+            .attr('target', '_blank')
         $(`#${parentId}`).append(card.append(img, body.append(cardTitle, cardText, cardDownload)));
     }
 }
@@ -49,15 +52,9 @@ class Subject {
 }
 
 
-// Buttons of predetermined subjects
-let subjects = ["cats", "dogs", "turtles", "fish", "goats", "llamas", "birds", "snakes", "lizards"]
+// Predetermined subjects
+let subjects = ["Cats", "Dogs", "Turtles", "Fish", "Goats", "Llamas", "Birds", "Snakes", "Lizards"]
 let subjectButtons = []
-
-subjects.forEach(element => {
-    let button = new Subject(element)
-    button.buildButton("buttons-box")
-    subjectButtons.push(button)
-});
 
 
 // Functions for event listeners
@@ -79,12 +76,13 @@ let getGifs = function () {
         success: (result) => {
             let gifs = [];
             let data = result.data;
+            console.log(data)
             data.forEach(element => {
                 let active = element.images.fixed_width.url;
                 let inactive = element.images.fixed_width_still.url;
                 let rating = element.rating;
                 let title = element.title;
-                let download = element.url;
+                let download = element.images.original.url;
 
                 let gif = new Gif(rating, active, inactive, title, download);
                 gif.buildCard("main-box");
@@ -95,19 +93,42 @@ let getGifs = function () {
     })
 }
 
-let addSubject = function () {
-    // Add an input box with submit button that will add to the predetermined list
+let addSubject = () => {
+    if ($("#topicAddOn").val()) {
+        let newSubject = $("#topicAddOn").val()
+        subjects.unshift(newSubject)
+        $("#topicAddOn").val("")
+        build(subjects)
+    }
 }
 
 let clearField = function () {
-    // Add a button that clears the screen of all gifs
+    $("#main-box").empty()
+}
+
+let build = function (topics) {
+    $("#buttons-box").empty()
+    topics.forEach(element => {
+        let button = new Subject(element)
+        button.buildButton("buttons-box")
+        subjectButtons.push(button)
+    });
 }
 
 // Event listeners
+
+$(document).ready(build(subjects))
+
 $(document).on('click', 'img', trigger);
 
 $(document).on('click', '.subject', getGifs);
 
-$(document).on('click', '#sumbit', addSubject)
+$(document).on('click', '#button-addon2', addSubject)
 
 $(document).on('click', '#clear', clearField)
+
+$("#topicAddOn").keyup((event) => {
+    if (event.key === "Enter") {
+        addSubject()
+    }
+})
