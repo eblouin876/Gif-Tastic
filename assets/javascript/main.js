@@ -8,7 +8,8 @@ class Gif {
         this.download = download;
     }
 
-    buildCard = (parentId) => {
+    buildCard = (parentId, fav) => {
+        let favorite;
         let card = $('<div>')
             .addClass('card m-2 w-5')
             .attr('style', 'width: 45%; float: left')
@@ -27,13 +28,18 @@ class Gif {
         let cardText = $('<p>')
             .addClass('card-text')
             .text('Rating: ' + this.rating);
-        let cardDownload = $('<a>')
-            .addClass('btn btn-primary')
-            .text('Download')
-            .attr('download', true)
-            .attr('href', this.download)
-            .attr('target', '_blank')
-        $(`#${parentId}`).append(card.append(img, body.append(cardTitle, cardText, cardDownload)));
+        if (fav) {
+            favorite = $('<button>')
+                .text("Remove")
+                .attr('data-ref', this.title)
+                .addClass("btn btn-danger remove-favorites")
+        } else {
+            favorite = $('<button>')
+                .addClass('btn btn-primary add-favorites')
+                .attr('data-ref', this.title)
+                .text('Add to Favorites')
+        }
+        $(`#${parentId}`).append(card.append(img, body.append(cardTitle, cardText, favorite)));
     }
 }
 
@@ -53,8 +59,9 @@ class Subject {
 
 
 // Predetermined subjects
-let subjects = ["Cats", "Dogs", "Turtles", "Fish", "Goats", "Llamas", "Birds", "Snakes", "Lizards"]
-let subjectButtons = []
+let subjects = ["Cats", "Dogs", "Turtles", "Fish", "Goats", "Llamas", "Birds", "Snakes", "Lizards"];
+let subjectButtons = [];
+let gifs = {};
 
 
 // Functions for event listeners
@@ -74,7 +81,6 @@ let getGifs = function () {
     $.ajax({
         url: `https://api.giphy.com/v1/gifs/search?q=${search}&rating=g&offset=${rand}&api_key=V5ocWl5KK3sMT5VrH2fFjEVoaCuVfUru&limit=10`,
         success: (result) => {
-            let gifs = [];
             let data = result.data;
             console.log(data)
             data.forEach(element => {
@@ -86,7 +92,7 @@ let getGifs = function () {
 
                 let gif = new Gif(rating, active, inactive, title, download);
                 gif.buildCard("main-box");
-                gifs.push(gif);
+                gifs[title] = gif;
             });
 
         }
@@ -115,6 +121,26 @@ let build = function (topics) {
     });
 }
 
+let addFavorite = function () {
+    localStorage.setItem($(this).attr('data-ref'), JSON.stringify(gifs[$(this).attr('data-ref')]))
+}
+
+let buildFavorites = function () {
+    $("#modal-favorites").empty()
+    let keys = Object.keys(localStorage)
+    keys.forEach(function (key) {
+        let archive = JSON.parse(localStorage.getItem(key))
+        let obj = new Gif(archive.rating, archive.activeLink, archive.inactiveLink, archive.title, archive.download)
+        obj.buildCard("modal-favorites", "fav")
+    })
+}
+
+let removeFavorite = function () {
+    localStorage.removeItem($(this).attr('data-ref'), JSON.stringify(gifs[$(this).attr('data-ref')]))
+    buildFavorites()
+}
+
+
 // Event listeners
 
 $(document).ready(build(subjects))
@@ -126,6 +152,12 @@ $(document).on('click', '.subject', getGifs);
 $(document).on('click', '#button-addon2', addSubject)
 
 $(document).on('click', '#clear', clearField)
+
+$(document).on('click', '.add-favorites', addFavorite)
+
+$(document).on('click', '.remove-favorites', removeFavorite)
+
+$(document).on('click', '#favorites-button', buildFavorites)
 
 $("#topicAddOn").keyup((event) => {
     if (event.key === "Enter") {
